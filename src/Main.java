@@ -1,4 +1,7 @@
 import java.util.Scanner;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 
 
 public class Main {
@@ -11,6 +14,9 @@ public class Main {
 	
 	
 	private static int droppedCalls;
+	private static double cumulativeWaitingTime;
+    private static double lastDialInTime;
+    private static double cumulativeBusyTime;
 	
 	private static Poisson dialInPoisson;
 	private static Poisson connectionPoisson;
@@ -19,6 +25,10 @@ public class Main {
 	private static QueueCircularArray<Event> userQ;
 	
 	private static Scanner scanner;
+	private static File txtFile;
+	private static FileWriter fileOut;
+	
+	private static int nextID = 1000;
 	
 	public static void main(String args[]) {
 		
@@ -29,6 +39,13 @@ public class Main {
 		
 		//Open Scanner object to take keyboard input.
 		scanner = new Scanner(System.in);
+		txtFile = new File("report.txt");
+		try {
+			fileOut = new FileWriter("report.txt");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		simulationManager();
 	   
@@ -40,25 +57,29 @@ public class Main {
 		
 		while(true) {
 			
+			//Get input param and write to report file
 			inputPrompt();
 			
+			//create event queue and waiting queue
 			eventQ = new QueueSLL<>(); 
 	        userQ = new QueueCircularArray<>(sizeWaitQueue);
 	        
-	        droppedCalls = 0;
-	        
+	        //init event queue with dial-in events
 	        dialInPoisson = new Poisson(timeBetweenDial);
+	        initEQ();
+	        
+	        droppedCalls = 0;
+	        cumulativeWaitingTime = 0;
+	        lastDialInTime = 0;
+	        cumulativeBusyTime = 0;
+	        
 	        connectionPoisson = new Poisson(avgConnTime);
 
-	        
-	        double cumulativeWaitingTime = 0;
-	        double lastDialInTime = 0;
-	        double cumulativeBusyTime = 0;
 	        
 	        simulationLoop();
 		
 			double averageWaitTime = (userQ.size() == 0) ? 0 : cumulativeWaitingTime / userQ.size();
-	        double modemBusyPercentage = (cumulativeBusyTime / simLength) * 100;
+	        double modemBusyPercentage = (cumulativeBusyTime / (numModem * simLength)) * 100;
 
 	        System.out.println("Number of dropped calls: " + droppedCalls);
 	        System.out.println("Average wait time = " + averageWaitTime);
@@ -80,62 +101,104 @@ public class Main {
 		
 		System.out.print("Enter simulation length: ");
 	    simLength = scanner.nextInt();
+	    try {
+			fileOut.write("Simulation length: " + simLength);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	    
 	    System.out.print("Enter average time between dials: ");
 	    timeBetweenDial = scanner.nextDouble();
+	    try {
+			fileOut.write("Average time between Dial-Ins: " + timeBetweenDial);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	    
 	    System.out.print("Enter average connection time: ");
 	    avgConnTime = scanner.nextInt();
+	    try {
+			fileOut.write("Average connection time: " + avgConnTime);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	    
 	    System.out.print("Enter number of modems: ");
 	    numModem = scanner.nextInt();
+	    try {
+			fileOut.write("Number of modems: " + numModem);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	    
 	    System.out.print("Enter waiting queue size: ");
 	    sizeWaitQueue = scanner.nextInt();
+	    try {
+			fileOut.write("Size of waiting queue: " + sizeWaitQueue);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	    
 	}
 	
+	private static void initEQ() {
+		
+		for(int i = 0; i < simLength; i++) {
+			
+			int numDials = dialInPoisson.nextInt();
+			
+			for(int j = 0; j < numDials; j++) {
+				
+				Event newEvent = new Event(Event.EventType.DIAL_IN, i, nextID);
+				nextID++;
+				eventQ.offer(newEvent);
+				
+			}
+			
+		}
+		
+	}
+	
 	private static void simulationLoop() {
-	    // 1. Initialize the simulation with a few dial-in events.
-	    for(int i = 0; i < numModem; i++) {
-	        eventQ.offer(new Event(Event.EventType.DIAL_IN, i, 1000));
-	    }
+		
+		int availModem = numModem;
+		
+		for(int i = 0; i < simLength; i++) {
+			
+			while(eventQ.peek() != null && eventQ.peek().getEventTime() == i) {
+				
+				Event currEvent = eventQ.poll();
+				if(currEvent.getEventType() == Event.EventType.HANG_UP) {
+					availModem++;
+				} else if(currEvent.getEventType() == Event.EventType.DIAL_IN && userQ.size() < sizeWaitQueue) {
+					userQ.offer(currEvent);
+				} else {
+					System.out.println("Customer " + currEvent.getUserID() + " was denied service at time unit " + i);
+					droppedCalls++;
+				}
+				
+			}
+			
+			while(availModem > 0 && userQ.peek() != null) {
+				
+				Event currEvent = userQ.poll();
+				cumulativeWaitingTime += (i - currEvent.getEventTime());
+				int connectionTime = connectionPoisson.nextInt();
+				
+				Event currEventHangUp = new Event(Event.EventType.HANG_UP, currEvent.getEventTime() + connectionTime,  currEvent.getUserID());
+				eventQ.offer(currEventHangUp);
+				
+				cumulativeBusyTime += connectionTime;
+				availModem--;
+				
+			}
+		}
 
-	    while(!eventQ.empty()) {
-	        Event currentEvent = eventQ.poll();
-
-	        switch(currentEvent.getEventType()) {
-	            case DIAL_IN:
-	                // Check if a modem is available
-	                if(numModem > 0) {
-	                    numModem--;
-	                    // Schedule hang-up event for this user
-	                    double hangUpTime = currentEvent.getEventTime() + connectionPoisson.nextInt();
-	                    eventQ.offer(new Event(Event.EventType.HANG_UP, (int)hangUpTime, currentEvent.getUserID()));
-	                } else if(userQ.size() < sizeWaitQueue) {
-	                    userQ.offer(currentEvent);
-	                } else {
-	                    droppedCalls++;
-	                }
-
-	                // Schedule next dial-in event
-	                double nextDialInTime = currentEvent.getEventTime() + dialInPoisson.nextInt();
-	                if(nextDialInTime < simLength) {
-	                    eventQ.offer(new Event(Event.EventType.DIAL_IN, (int)nextDialInTime, currentEvent.getUserID()));
-	                }
-	                break;
-
-	            case HANG_UP:
-	                numModem++;
-	                if(!userQ.empty()) {
-	                    Event waitingUser = userQ.poll();
-	                    double hangUpTime = currentEvent.getEventTime() + connectionPoisson.nextInt();
-	                    eventQ.offer(new Event(Event.EventType.HANG_UP, (int)hangUpTime, waitingUser.getUserID()));
-	                    numModem--;
-	                }
-	                break;
-	        }
-	    }
 	}
 
 }
