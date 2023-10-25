@@ -43,7 +43,7 @@ public class QueueSLL<E> {
 	private int size = 0;
 	
 	/** 
-	 * Insert an item at the rear of the queue
+	 * Insert in correct position for priority queue
 	 * @param  item  The element to add
 	 * @return true 
 	 */
