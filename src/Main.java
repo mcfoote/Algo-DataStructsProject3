@@ -108,7 +108,7 @@ public class Main {
 			
 			droppedCalls = 0;
 	        cumulativeWaitingTime = 0;
-	        totalUser = 1;
+	        totalUser = 0;
 	        cumulativeBusyTime = 0;
 	        nextID = 1000;
 			//Get input param and write to report file
@@ -138,7 +138,7 @@ public class Main {
 	        writeOut();
 
 	        
-	        while (true) {  // This is your inner validation loop
+	        while (true) {  
 	            System.out.print("Run simulation again, yes (or no)? ");
 	            String response = scanner.next();
 
@@ -174,7 +174,7 @@ public class Main {
 	            scanner.next();
 	        }
 	        timeBetweenDial = scanner.nextDouble();
-	    } while (timeBetweenDial <= 0.0 && timeBetweenDial > 1.0);
+	    } while (timeBetweenDial < 0.0 && timeBetweenDial <= 1.0);
 
 	    // For the average connection time
 	    do {
@@ -204,13 +204,13 @@ public class Main {
 	            scanner.next();
 	        }
 	        sizeWaitQueue = scanner.nextInt();
-	    } while (sizeWaitQueue < 0);  // assuming you allow queue size of 0
+	    } while (sizeWaitQueue < 0 || sizeWaitQueue == -1);  
 	}
 	
 	//Populates event queue with dial in population
 	private static void initEQ() {
 
-		for(int i = 0; i < simLength; i++) {
+		for(int i = 0; i <= simLength; i++) {
 
 			int numDials = dialInPoisson.nextInt();
 			
@@ -218,9 +218,8 @@ public class Main {
 
 				Event newEvent = new Event(Event.EventType.DIAL_IN, i, nextID);
 				nextID++;
-				totalUser++;
 				eventQ.offer(newEvent);
-
+				
 			}
 			
 		}
@@ -232,18 +231,22 @@ public class Main {
 
 		int availModem = numModem;
 		
+		//loop manages simulations time value
 		for(int i = 0; i < simLength; i++) {
 			
+			
 			//incoming events are processed and passed to user queue
-			while(eventQ.peek() != null && eventQ.peek().getEventTime() == i) {
+			while(eventQ.peek() != null && eventQ.peek().getEventTime() == i) { //
 
 				
 				Event currEvent = eventQ.poll();
+
 				
 				if(currEvent.getEventType() == Event.EventType.HANG_UP) {
 					availModem++;
-				} else if(currEvent.getEventType() == Event.EventType.DIAL_IN && userQ.size() < sizeWaitQueue || sizeWaitQueue == -1) {
+				}  if(currEvent.getEventType() == Event.EventType.DIAL_IN && userQ.size() < sizeWaitQueue || sizeWaitQueue == -1) {
 					userQ.offer(currEvent);
+					totalUser++;
 				} else {
 					System.out.println("Customer " + currEvent.getUserID() + " was denied service at time unit " + i);
 					droppedCalls++;
@@ -254,8 +257,8 @@ public class Main {
 			//user waiting queue processing
 			while(availModem > 0 && userQ.peek() != null) {
 
-				
 				Event currEvent = userQ.poll();
+				
 				cumulativeWaitingTime += (i - currEvent.getEventTime());
 				int connectionTime = connectionPoisson.nextInt();
 				
@@ -267,6 +270,8 @@ public class Main {
 				availModem--;
 				
 			}
+		
+			
 		}
 
 	}
@@ -278,12 +283,12 @@ public class Main {
 	        double modemBusyPercentage = (cumulativeBusyTime / (numModem * simLength)) * 100;
 
 	        fileOut.write(simLength + "	| " +
-	                timeBetweenDial + " 	| " +
+	                timeBetweenDial + " | " +
 	                avgConnTime + " 	| " +
 	                numModem + " 	| " +
 	                sizeWaitQueue + " 	| " +
-	                String.format("%.2f", averageWaitTime) + " 	| " +
-	                String.format("%.2f", modemBusyPercentage) + " 	| " +
+	                String.format("%.2f", averageWaitTime) + " | " +
+	                String.format("%.2f", modemBusyPercentage) + " | " +
 	                userQ.size() + "\n");
 	        fileOut.flush();
 	    } catch (IOException e) {

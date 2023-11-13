@@ -1,0 +1,86 @@
+Programmer:		Mitchell Foote
+Course:			COSC 311, F'23
+Project:		3
+Due date:		10-26-23
+
+Enter simulation length: 50
+Enter average time between dials: 0.2
+Enter average connection time: 3
+Enter number of modems: 5
+Enter waiting queue size: 10
+Number of dropped calls: 0
+Average wait time = 0.0
+Percentage of time modems were busy = 1.6
+Number of customers left in the waiting queue = 0
+Run simulation again, yes (or no)? yes
+Enter simulation length: 50
+Enter average time between dials: 0.1
+Enter average connection time: 5
+Enter number of modems: 5
+Enter waiting queue size: 10
+Customer 1010 was denied service at time unit 1
+Customer 1009 was denied service at time unit 1
+Customer 1008 was denied service at time unit 1
+Customer 1030 was denied service at time unit 2
+Customer 1029 was denied service at time unit 2
+Customer 1028 was denied service at time unit 2
+Customer 1027 was denied service at time unit 2
+Customer 1026 was denied service at time unit 2
+Customer 1025 was denied service at time unit 2
+Customer 1024 was denied service at time unit 2
+Customer 1023 was denied service at time unit 2
+Customer 1022 was denied service at time unit 2
+Customer 1021 was denied service at time unit 2
+Customer 1020 was denied service at time unit 2
+Customer 1019 was denied service at time unit 2
+Customer 1018 was denied service at time unit 2
+Customer 1041 was denied service at time unit 3
+Customer 1040 was denied service at time unit 3
+Customer 1039 was denied service at time unit 3
+Customer 1038 was denied service at time unit 3
+Customer 1037 was denied service at time unit 3
+Customer 1036 was denied service at time unit 3
+Customer 1035 was denied service at time unit 3
+Customer 1034 was denied service at time unit 3
+Customer 1033 was denied service at time unit 3
+Customer 1032 was denied service at time unit 3
+Customer 1058 was denied service at time unit 4
+Customer 1057 was denied service at time unit 4
+Customer 1056 was denied service at time unit 4
+Customer 1055 was denied service at time unit 4
+Customer 1054 was denied service at time unit 4
+Customer 1053 was denied service at time unit 4
+Customer 1052 was denied service at time unit 4
+Customer 1051 was denied service at time unit 4
+Customer 1050 was denied service at time unit 4
+Customer 1049 was denied service at time unit 4
+Customer 1048 was denied service at time unit 4
+Customer 1047 was denied service at time unit 4
+Customer 1046 was denied service at time unit 4
+Customer 1045 was denied service at time unit 4
+Customer 1044 was denied service at time unit 4
+Customer 1069 was denied service at time unit 5
+Customer 1068 was denied service at time unit 5
+Customer 1067 was denied service at time unit 5
+Customer 1066 was denied service at time unit 5
+Customer 1065 was denied service at time unit 5
+Customer 1064 was denied service at time unit 5
+Customer 1063 was denied service at time unit 5
+Customer 1062 was denied service at time unit 5
+Customer 1061 was denied service at time unit 5
+Customer 1060 was denied service at time unit 5
+Customer 1059 was denied service at time unit 5
+Customer 1079 was denied service at time unit 6
+Customer 1078 was denied service at time unit 6
+Customer 1077 was denied service at time unit 6
+Customer 1076 was denied service at time unit 6
+Customer 1075 was denied service at time unit 6
+Customer 1074 was denied service at time unit 6
+Customer 1073 was denied service at time unit 6
+Customer 1072 was denied service at time unit 6
+Customer 1071 was denied service at time unit 6
+Number of dropped calls: 61
+Average wait time = 1.35
+Percentage of time modems were busy = 22.400000000000002
+Number of customers left in the waiting queue = 7
+Run simulation again, yes (or no)? no

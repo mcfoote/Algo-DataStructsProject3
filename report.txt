@@ -1,0 +1,11 @@
+1- Length of simulation
+2- Average time between dial-in attempts
+3- Average connection time
+4- Number of modems in the bank
+5- Size of the waiting queue, -1 for an infinite queue
+6- Average wait time
+7- Percentage of time modems were busy
+8- Number of customers left in the waiting queue
+1     | 2     | 3 	| 4 	| 5 	| 6 	| 7 	| 8		
+--------------------------------------------------------------
+50	| 0.2 | 3 	| 5 	| 10 	| 0.67 | 15.60 | 8
